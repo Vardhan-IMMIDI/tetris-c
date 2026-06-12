@@ -12,18 +12,77 @@
 #define BLOCK "[]"
 #define EMPTY_BLOCK ".."
 
-
-int board[HEIGHT][WIDTH];
-int current_block[BLOCK_SIZE][AXES];
-int current_block_color;
-int current_block_rotation;
-
 void initialize(void);
 void printer(void);
 bool add_new(void);
 bool gravity(void);
 void add_block_to_board(int block[BLOCK_SIZE][AXES], int color);
 void remove_block_from_board(int block[BLOCK_SIZE][AXES]);
+
+int board[HEIGHT][WIDTH];
+int current_block[BLOCK_SIZE][AXES];
+int current_block_color;
+int current_block_rotation;
+
+
+
+const int blocks[7][4][2] = {{{0, 0}, {0, 1}, {1, 0}, {1, 1}},  // Square
+                            {{0, 0}, {1, 0}, {2, 0}, {3, 0}},  // Line
+                            {{0, 1}, {1, 1}, {2, 0}, {2, 1}},  // J
+                            {{0, 0}, {1, 0}, {2, 0}, {2, 1}},  // L
+                            {{0, 1}, {0, 2}, {1, 0}, {1, 1}},  // S
+                            {{0, 1}, {1, 0}, {1, 1}, {1, 2}},  // T {In reverse}
+                            {{0, 0}, {0, 1}, {1, 1}, {1, 2}}};  // Z
+
+
+const int rotations[6][4][4][2] = {
+                                    // 0: Line block, 2 rotations
+                                    {
+                                        {{2, 0}, {2, 1}, {2, 2}, {2, 3}},
+                                        {{0, 1}, {1, 1}, {2, 1}, {3, 1}},
+                                        {{2, 0}, {2, 1}, {2, 2}, {2, 3}},   // Duplicated 
+                                        {{0, 1}, {1, 1}, {2, 1}, {3, 1}}    // Due to uncompatible jagged array in c
+                                    },
+                                    // 1: J block, 4 rotations
+                                    {
+                                        {{1, 0}, {1, 1}, {1, 2}, {2, 2}},
+                                        {{0, 1}, {1, 1}, {2, 0}, {2, 1}},
+                                        {{0, 0}, {1, 0}, {1, 1}, {1, 2}},
+                                        {{0, 1}, {0, 2}, {1, 1}, {2, 1}}
+                                    },
+                                    // 2: L block, 4 rotations
+                                    {
+                                        {{1, 0}, {1, 1}, {1, 2}, {2, 0}},
+                                        {{0, 0}, {0, 1}, {1, 1}, {2, 1}},
+                                        {{0, 2}, {1, 0}, {1, 1}, {1, 2}},
+                                        {{0, 1}, {1, 1}, {2, 1}, {2, 2}}
+                                    },
+                                    // 3: S block, 2 rotations
+                                    {
+                                        {{1, 1}, {1, 2}, {2, 0}, {2, 1}},
+                                        {{0, 0}, {1, 0}, {1, 1}, {2, 1}},
+                                        {{1, 1}, {1, 2}, {2, 0}, {2, 1}},   // Duplicated 
+                                        {{0, 0}, {1, 0}, {1, 1}, {2, 1}}    // Due to uncompatible jagged array in c
+                                    },
+                                    // 4: T block, 4 rotations
+                                    {
+                                        {{1, 0}, {1, 1}, {1, 2}, {2, 1}},
+                                        {{0, 1}, {1, 0}, {1, 1}, {2, 1}},
+                                        {{0, 1}, {1, 0}, {1, 1}, {1, 2}},
+                                        {{0, 1}, {1, 1}, {1, 2}, {2, 1}}
+                                    },
+                                    // 5: Z block, 2 rotations
+                                    {
+                                        {{1, 0}, {1, 1}, {2, 1}, {2, 2}},
+                                        {{0, 1}, {1, 0}, {1, 1}, {2, 0}},
+                                        {{1, 0}, {1, 1}, {2, 1}, {2, 2}},   // Duplicated 
+                                        {{0, 1}, {1, 0}, {1, 1}, {2, 0}}    // Due to uncompatible jagged array in c
+                                    }
+                                };
+
+
+const int sizes[7][2] = {{2, 2}, {4, 1}, {2, 3}, {2, 3}, {3, 2}, {3, 2}, {2, 3}};
+
 
 int main(void)
 {
