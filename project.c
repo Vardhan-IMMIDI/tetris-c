@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <unistd.h>
+#include <stdbool.h>
+#include <stdlib.h>
 
 #define HEIGHT 20
 #define WIDTH 10
@@ -12,6 +14,7 @@ int board[HEIGHT][WIDTH];
 
 void initialize(void);
 void printer(void);
+bool add_new(void);
 
 
 int main(void)
@@ -19,6 +22,10 @@ int main(void)
     initialize();
     for (int i = 0; i < 100000; i++)
     {
+        if (i == 0)
+        {
+            add_new();
+        }
         printer();
         printf("%i\n", i);
         sleep(1);
@@ -70,4 +77,16 @@ void printer(void)
         // Print Right Border
         printf("!>\n");
     }
+}
+
+bool add_new(void)
+{
+    int block_width = 2;
+    int pos = rand() % (WIDTH - block_width);
+    board[0][0 + pos] = 1;
+    board[0][1 + pos] = 1;
+    board[1][0 + pos] = 1;
+    board[1][1 + pos] = 1;
+
+    return true;
 }
