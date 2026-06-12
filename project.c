@@ -5,28 +5,37 @@
 
 #define HEIGHT 20
 #define WIDTH 10
+#define HEIGHT_INDEX 0
+#define WIDTH_INDEX 1
+#define BLOCK_SIZE 4
+#define AXES 2
 #define BLOCK "[]"
 #define EMPTY_BLOCK ".."
 
 
 int board[HEIGHT][WIDTH];
-
+int current_block[BLOCK_SIZE][AXES];
+int current_block_color;
+int current_block_rotation;
 
 void initialize(void);
 void printer(void);
 bool add_new(void);
-
+bool gravity(void);
+void add_block_to_board(int block[BLOCK_SIZE][AXES], int color);
+void remove_block_from_board(int block[BLOCK_SIZE][AXES]);
 
 int main(void)
 {
     initialize();
+    add_new();
     for (int i = 0; i < 100000; i++)
     {
-        if (i == 0)
+        printer();
+        if (!gravity())
         {
             add_new();
         }
-        printer();
         printf("%i\n", i);
         sleep(1);
     }
@@ -88,5 +97,65 @@ bool add_new(void)
     board[1][0 + pos] = 1;
     board[1][1 + pos] = 1;
 
+    current_block[0][0] = 0;
+    current_block[0][1] = 0 + pos;
+    current_block[1][0] = 0;
+    current_block[1][1] = 1 + pos;
+    current_block[2][0] = 1;
+    current_block[2][1] = 0 + pos;
+    current_block[3][0] = 1;
+    current_block[3][1] = 1 + pos;
+
+    current_block_color = 1;
+    current_block_rotation = 1;
     return true;
+}
+
+
+
+bool gravity(void)
+{
+    for (int i = 0; i < BLOCK_SIZE; i++)
+    {
+        if (current_block[i][0] + 1 >=  HEIGHT)
+        {
+            return false;
+        }
+    }
+
+    remove_block_from_board(current_block);
+
+    for (int i = 0; i < BLOCK_SIZE; i++)
+    {
+        if (board[current_block[i][HEIGHT_INDEX] + 1][current_block[i][WIDTH_INDEX]] > 0)
+        {
+            add_block_to_board(current_block, current_block_color);
+            return false;
+        }
+    }
+
+    for (int i = 0; i < BLOCK_SIZE; i++)
+    {
+        current_block[i][0] += 1;
+    }
+
+    add_block_to_board(current_block, current_block_color);
+
+    return true;
+}
+
+void add_block_to_board(int block[BLOCK_SIZE][AXES], int color)
+{
+    for (int i = 0; i < BLOCK_SIZE; i++)
+    {
+        board[block[i][HEIGHT_INDEX]][block[i][WIDTH_INDEX]] = color;
+    }
+}
+
+void remove_block_from_board(int block[BLOCK_SIZE][AXES])
+{
+    for (int i = 0; i < BLOCK_SIZE; i++)
+    {
+        board[block[i][HEIGHT_INDEX]][block[i][WIDTH_INDEX]] = 0;
+    }
 }
