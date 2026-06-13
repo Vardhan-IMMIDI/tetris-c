@@ -15,7 +15,7 @@
 #define BLOCKS 7
 #define COLORS 2
 #define ROTATIONS 4
-#define BLOCK "[]"
+#define BLOCK ' '
 #define EMPTY_BLOCK ".."
 #define F(x) (int)((x) * (3.92))
 
@@ -28,6 +28,7 @@ void add_block_to_board(int block[BLOCK_SIZE][AXES], int color);
 void remove_block_from_board(int block[BLOCK_SIZE][AXES]);
 int runner(void);
 void draw_block(int y, int x, int color_pair);
+void print_border(void);
 
 
 int board[HEIGHT][WIDTH];
@@ -112,12 +113,15 @@ int runner(void)
         printer();
         if (!gravity())
         {
-            add_new();
+            if (!add_new())
+            {
+                break;
+            }
         }
-        // printf("%i\n", i);
-        sleep(1);
+        sleep(0);
     }
-
+    getch();
+    endwin();
     return 0;
 }
 
@@ -161,7 +165,13 @@ void initialize(void)
     init_pair(8, 9, 17);    //  Purple
     init_pair(9, 9, 18);    //  Yellow
 
-    // bkgd(COLOR_PAIR(1));
+    for (int i = 0; i < LINES; i++)
+    {
+        for (int j = 0; j < COLS; j++)
+        {
+            draw_block(i, j, 1);
+        }
+    }
 
     return;
 }
@@ -172,26 +182,48 @@ void printer(void)
     // Print every frame
     move(0,0);
 
+    int horizontal_padding = (COLS / 2) - (WIDTH);
+    int vertical_padding = (LINES / 2) - (HEIGHT / 2);
     // Print board and corresponding blocks
     for (int i = 0; i < HEIGHT; i++)
     {
-        for (int j = 0; j < WIDTH; j++)
+        for (int j = 0 ; j < WIDTH; j++)
         {
             // Print BLOCK if block present
             if (board[i][j] > 0)
             {
                 // Print BLOCK if block present
-                draw_block(i, j, 5);
+                draw_block(i + vertical_padding, (j * 2) + horizontal_padding, 5);
+                draw_block(i + vertical_padding, (j * 2) + horizontal_padding + 1, 5);
             }
             else
             {
                 // Print EMPTY_BLOCK if block is not present
-                draw_block(i, j, 1);
+                draw_block(i + vertical_padding, (j * 2) + horizontal_padding, 1);
+                draw_block(i + vertical_padding, (j * 2) + horizontal_padding + 1, 1);
             }
         }
     }
+    print_border();
     refresh();
 
+}
+
+void print_border(void)
+{
+    for (int i = 0; i <= HEIGHT; i++)
+    {
+        draw_block(i + ((LINES - HEIGHT) / 2), ((COLS / 2) - WIDTH) - 1, 2);
+        draw_block(i + ((LINES - HEIGHT) / 2), ((COLS / 2) - WIDTH) - 2, 2);
+        draw_block(i + ((LINES - HEIGHT) / 2), ((COLS / 2) + WIDTH) + 1, 2);
+        draw_block(i + ((LINES - HEIGHT) / 2), ((COLS / 2) + WIDTH) + 2, 2);
+    }
+    
+    for (int i = 0; i <= WIDTH; i++)
+    {
+        draw_block((LINES + HEIGHT) / 2, (i * 2) + (COLS / 2) -  WIDTH, 2);
+        draw_block((LINES + HEIGHT) / 2, (i * 2) + (COLS / 2) -  WIDTH + 1, 2);
+    }
 }
 
 bool add_new(void)
@@ -272,10 +304,11 @@ void remove_block_from_board(int block[BLOCK_SIZE][AXES])
     }
 }
 
-void draw_block(int y, int x, int color_pair)
+void draw_block(int x, int y, int color_pair)
 {
     attron(COLOR_PAIR(color_pair));
-    mvaddch(y, x, ' ');
+    mvaddch(x, y, ' ');
+    // mvaddch(y, x, ' ');
     // mvaddch(y + 10, x * 2 + 20, BLOCK);
     // mvaddch(y + 10, x * 2 + 1 + 20, BLOCK);
     attroff(COLOR_PAIR(color_pair));
