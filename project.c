@@ -3,6 +3,8 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <time.h>
+#include <ncurses.h>
+#include <sys/time.h>
 
 #define HEIGHT 20
 #define WIDTH 10
@@ -15,6 +17,8 @@
 #define ROTATIONS 4
 #define BLOCK "[]"
 #define EMPTY_BLOCK ".."
+#define F(x) (int)((x) * (3.92))
+
 
 void initialize(void);
 void printer(void);
@@ -22,6 +26,9 @@ bool add_new(void);
 bool gravity(void);
 void add_block_to_board(int block[BLOCK_SIZE][AXES], int color);
 void remove_block_from_board(int block[BLOCK_SIZE][AXES]);
+int runner(void);
+void draw_block(int y, int x, int color_pair);
+
 
 int board[HEIGHT][WIDTH];
 int current_block[BLOCK_SIZE][AXES];
@@ -91,8 +98,15 @@ const int sizes[7][2] = {{2, 2}, {4, 1}, {2, 3}, {2, 3}, {3, 2}, {3, 2}, {2, 3}}
 
 int main(void)
 {
+    runner();
+}
+
+
+int runner(void)
+{
     initialize();
     add_new();
+    
     for (int i = 0; i < 100000; i++)
     {
         printer();
@@ -100,9 +114,11 @@ int main(void)
         {
             add_new();
         }
-        printf("%i\n", i);
+        // printf("%i\n", i);
         sleep(1);
     }
+
+    return 0;
 }
 
 void initialize(void)
@@ -115,41 +131,67 @@ void initialize(void)
             board[i][j] = 0;
         }
     }
+
+    initscr();
+    // cbreak();
+    // noecho();
+    // keypad(stdscr, true);
+    // nodelay(stdscr, true);
+    start_color();
+    curs_set(0);
+
+    init_color(9, 0, 0, 0); //  Black
+    init_color(10, F(255), F(255), F(255)); //   White
+    init_color(11, F(120), F(120), F(120));  //  Grey (borders)
+    init_color(12, F(205), 0, 0);  //  Red
+    init_color(13, 0, F(205), 0);  //  Green
+    init_color(14, 0, 0, F(205));  //  Blue
+    init_color(15, F(205), F(102), 0); //  Orange
+    init_color(16, 0, F(205), F(205)); //  Sky Blue
+    init_color(17, F(154), 0, F(205)); //  Purple
+    init_color(18, F(205), F(205), 0);  //  Yellow
+
+    init_pair(1, 10, 9);    //  Black White
+    init_pair(2, 9, 11);    //  Grey
+    init_pair(3, 9, 12);    //  Red
+    init_pair(4, 9, 13);    //  Green
+    init_pair(5, 9, 14);    //  Blue
+    init_pair(6, 9, 15);    //  Orange
+    init_pair(7, 9, 16);    //  Sky Blue
+    init_pair(8, 9, 17);    //  Purple
+    init_pair(9, 9, 18);    //  Yellow
+
+    // bkgd(COLOR_PAIR(1));
+
+    return;
 }
 
 
 void printer(void)
 {
     // Print every frame
-
-    // print leading new lines
-    for (int i = 0; i < 10; i++)
-    {
-        printf("\n");
-    }
+    move(0,0);
 
     // Print board and corresponding blocks
     for (int i = 0; i < HEIGHT; i++)
     {
-        // Print Left Border
-        printf("<!");
         for (int j = 0; j < WIDTH; j++)
         {
             // Print BLOCK if block present
             if (board[i][j] > 0)
             {
                 // Print BLOCK if block present
-                printf(BLOCK);
+                draw_block(i, j, 5);
             }
             else
             {
                 // Print EMPTY_BLOCK if block is not present
-                printf(EMPTY_BLOCK);
+                draw_block(i, j, 1);
             }
         }
-        // Print Right Border
-        printf("!>\n");
     }
+    refresh();
+
 }
 
 bool add_new(void)
@@ -159,8 +201,7 @@ bool add_new(void)
     int block = rand() % BLOCKS;
     int rotation = rand() % ROTATIONS;
     int position = rand() % (WIDTH - sizes[block][WIDTH_INDEX]);
-    // int block = 0, position = 0, rotation = 0;
-    printf("%i, %i, %i\n", block, position, rotation);
+
     for (int i = 0; i < BLOCK_SIZE; i++)
     {
         if (board[blocks[block][i][0]][blocks[block][i][1] + position] != 0)
@@ -178,6 +219,8 @@ bool add_new(void)
     }
 
     add_block_to_board(current_block, current_block_color);
+
+    return true;
 }
 
 
@@ -227,4 +270,13 @@ void remove_block_from_board(int block[BLOCK_SIZE][AXES])
     {
         board[block[i][HEIGHT_INDEX]][block[i][WIDTH_INDEX]] = 0;
     }
+}
+
+void draw_block(int y, int x, int color_pair)
+{
+    attron(COLOR_PAIR(color_pair));
+    mvaddch(y, x, ' ');
+    // mvaddch(y + 10, x * 2 + 20, BLOCK);
+    // mvaddch(y + 10, x * 2 + 1 + 20, BLOCK);
+    attroff(COLOR_PAIR(color_pair));
 }
