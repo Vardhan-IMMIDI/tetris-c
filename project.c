@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <time.h>
 
 #define HEIGHT 20
 #define WIDTH 10
@@ -9,6 +10,9 @@
 #define WIDTH_INDEX 1
 #define BLOCK_SIZE 4
 #define AXES 2
+#define BLOCKS 7
+#define COLORS 2
+#define ROTATIONS 4
 #define BLOCK "[]"
 #define EMPTY_BLOCK ".."
 
@@ -22,6 +26,7 @@ void remove_block_from_board(int block[BLOCK_SIZE][AXES]);
 int board[HEIGHT][WIDTH];
 int current_block[BLOCK_SIZE][AXES];
 int current_block_color;
+int current_block_index;
 int current_block_rotation;
 
 
@@ -149,25 +154,30 @@ void printer(void)
 
 bool add_new(void)
 {
-    int block_width = 2;
-    int pos = rand() % (WIDTH - block_width);
-    board[0][0 + pos] = 1;
-    board[0][1 + pos] = 1;
-    board[1][0 + pos] = 1;
-    board[1][1 + pos] = 1;
+    srand(time(NULL));
 
-    current_block[0][0] = 0;
-    current_block[0][1] = 0 + pos;
-    current_block[1][0] = 0;
-    current_block[1][1] = 1 + pos;
-    current_block[2][0] = 1;
-    current_block[2][1] = 0 + pos;
-    current_block[3][0] = 1;
-    current_block[3][1] = 1 + pos;
+    int block = rand() % BLOCKS;
+    int rotation = rand() % ROTATIONS;
+    int position = rand() % (WIDTH - sizes[block][WIDTH_INDEX]);
+    // int block = 0, position = 0, rotation = 0;
+    printf("%i, %i, %i\n", block, position, rotation);
+    for (int i = 0; i < BLOCK_SIZE; i++)
+    {
+        if (board[blocks[block][i][0]][blocks[block][i][1] + position] != 0)
+        {
+            return false;
+        }
+    }
 
-    current_block_color = 1;
-    current_block_rotation = 1;
-    return true;
+    current_block_color = 5;
+
+    for (int i = 0; i < BLOCK_SIZE; i++)
+    {
+        current_block[i][0] = blocks[block][i][0];
+        current_block[i][1] = blocks[block][i][1] + position;
+    }
+
+    add_block_to_board(current_block, current_block_color);
 }
 
 
