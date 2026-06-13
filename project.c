@@ -108,17 +108,28 @@ int runner(void)
     initialize();
     add_new();
     
-    for (int i = 0; i < 100000; i++)
+    struct timeval begin, start, current;
+    gettimeofday(&start, NULL);
+    gettimeofday(&begin, NULL);
+
+    for (;;)
     {
-        printer();
-        if (!gravity())
+        gettimeofday(&current, NULL);
+        unsigned long long current_ms = 1000000 * current.tv_sec + current.tv_usec;
+        unsigned long long start_ms = 1000000 * start.tv_sec + start.tv_usec;
+        unsigned long long elapsed = current.tv_usec - start.tv_usec;
+        if (elapsed > 500000)
         {
-            if (!add_new())
+            start = current;   
+            printer();
+            if (!gravity())
             {
-                break;
+                if (!add_new())
+                {
+                    break;
+                }
             }
         }
-        sleep(0);
     }
     getch();
     endwin();
