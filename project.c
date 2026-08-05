@@ -13,7 +13,7 @@
 #define BLOCK_SIZE 4
 #define AXES 2
 #define BLOCKS 7
-#define COLORS 2
+#define COLORS 7
 #define ROTATIONS 4
 #define BLOCK ' '
 #define EMPTY_BLOCK ".."
@@ -29,6 +29,7 @@ void remove_block_from_board(int block[BLOCK_SIZE][AXES]);
 int runner(void);
 void draw_block(int y, int x, int color_pair);
 void print_border(void);
+void move_block(int input);
 
 
 int board[HEIGHT][WIDTH];
@@ -108,28 +109,61 @@ int runner(void)
     initialize();
     add_new();
     
-    struct timeval begin, start, current;
-    gettimeofday(&start, NULL);
+    struct timeval begin, start1, start2, current;
+    gettimeofday(&start1, NULL);
+    gettimeofday(&start2, NULL);
     gettimeofday(&begin, NULL);
+
+    int key_stroke;
 
     for (;;)
     {
         gettimeofday(&current, NULL);
+
         unsigned long long current_ms = 1000000 * current.tv_sec + current.tv_usec;
-        unsigned long long start_ms = 1000000 * start.tv_sec + start.tv_usec;
-        unsigned long long elapsed = current.tv_usec - start.tv_usec;
-        if (elapsed > 500000)
+        unsigned long long start_ms = 1000000 * start1.tv_sec + start1.tv_usec;
+        unsigned long long elapsed1 = current.tv_usec - start1.tv_usec;
+        unsigned long long elapsed2 = current.tv_usec - start2.tv_usec;
+
+        int input = getch();
+
+        if (input != ERR)
         {
-            start = current;   
+            key_stroke = input;
+        }
+
+        if (elapsed1 > 50000)
+        {
+            start1 = current;
             printer();
-            if (!gravity())
+            move_block(key_stroke);
+            key_stroke = ERR;
+            if (elapsed2 > 500000)
             {
-                if (!add_new())
+                start2 = current;
+                if (!gravity())
                 {
-                    break;
+                    if (!add_new())
+                    {
+                        break;
+                    }
                 }
             }
         }
+        
+
+        // if (elapsed > 500000)
+        // {
+        //     start = current;   
+        //     printer();
+        //     if (!gravity())
+        //     {
+        //         if (!add_new())
+        //         {
+        //             break;
+        //         }
+        //     }
+        // }
     }
     getch();
     endwin();
@@ -149,9 +183,9 @@ void initialize(void)
 
     initscr();
     // cbreak();
-    // noecho();
-    // keypad(stdscr, true);
-    // nodelay(stdscr, true);
+    noecho();
+    keypad(stdscr, true);
+    nodelay(stdscr, true);
     start_color();
     curs_set(0);
 
@@ -166,21 +200,21 @@ void initialize(void)
     init_color(17, F(154), 0, F(205)); //  Purple
     init_color(18, F(205), F(205), 0);  //  Yellow
 
-    init_pair(1, 10, 9);    //  Black White
-    init_pair(2, 9, 11);    //  Grey
-    init_pair(3, 9, 12);    //  Red
-    init_pair(4, 9, 13);    //  Green
-    init_pair(5, 9, 14);    //  Blue
-    init_pair(6, 9, 15);    //  Orange
-    init_pair(7, 9, 16);    //  Sky Blue
-    init_pair(8, 9, 17);    //  Purple
-    init_pair(9, 9, 18);    //  Yellow
+    init_pair(0, 9, 9);    //  Black White
+    init_pair(1, 9, 11);    //  Grey
+    init_pair(2, 9, 12);    //  Red
+    init_pair(3, 9, 13);    //  Green
+    init_pair(4, 9, 14);    //  Blue
+    init_pair(5, 9, 15);    //  Orange
+    init_pair(6, 9, 16);    //  Sky Blue
+    init_pair(7, 9, 17);    //  Purple
+    init_pair(8, 9, 18);    //  Yellow
 
     for (int i = 0; i < LINES; i++)
     {
         for (int j = 0; j < COLS; j++)
         {
-            draw_block(i, j, 1);
+            draw_block(i, j, 0);
         }
     }
 
@@ -204,14 +238,14 @@ void printer(void)
             if (board[i][j] > 0)
             {
                 // Print BLOCK if block present
-                draw_block(i + vertical_padding, (j * 2) + horizontal_padding, 5);
-                draw_block(i + vertical_padding, (j * 2) + horizontal_padding + 1, 5);
+                draw_block(i + vertical_padding, (j * 2) + horizontal_padding, board[i][j]);
+                draw_block(i + vertical_padding, (j * 2) + horizontal_padding + 1, board[i][j]);
             }
             else
             {
                 // Print EMPTY_BLOCK if block is not present
-                draw_block(i + vertical_padding, (j * 2) + horizontal_padding, 1);
-                draw_block(i + vertical_padding, (j * 2) + horizontal_padding + 1, 1);
+                draw_block(i + vertical_padding, (j * 2) + horizontal_padding, 0);
+                draw_block(i + vertical_padding, (j * 2) + horizontal_padding + 1, 0);
             }
         }
     }
@@ -224,16 +258,16 @@ void print_border(void)
 {
     for (int i = 0; i <= HEIGHT; i++)
     {
-        draw_block(i + ((LINES - HEIGHT) / 2), ((COLS / 2) - WIDTH) - 1, 2);
-        draw_block(i + ((LINES - HEIGHT) / 2), ((COLS / 2) - WIDTH) - 2, 2);
-        draw_block(i + ((LINES - HEIGHT) / 2), ((COLS / 2) + WIDTH) + 1, 2);
-        draw_block(i + ((LINES - HEIGHT) / 2), ((COLS / 2) + WIDTH) + 2, 2);
+        draw_block(i + ((LINES - HEIGHT) / 2), ((COLS / 2) - WIDTH) - 1, 1);
+        draw_block(i + ((LINES - HEIGHT) / 2), ((COLS / 2) - WIDTH) - 2, 1);
+        draw_block(i + ((LINES - HEIGHT) / 2), ((COLS / 2) + WIDTH), 1);
+        draw_block(i + ((LINES - HEIGHT) / 2), ((COLS / 2) + WIDTH) + 1, 1);
     }
     
     for (int i = 0; i <= WIDTH; i++)
     {
-        draw_block((LINES + HEIGHT) / 2, (i * 2) + (COLS / 2) -  WIDTH, 2);
-        draw_block((LINES + HEIGHT) / 2, (i * 2) + (COLS / 2) -  WIDTH + 1, 2);
+        draw_block((LINES + HEIGHT) / 2, (i * 2) + (COLS / 2) -  WIDTH, 1);
+        draw_block((LINES + HEIGHT) / 2, (i * 2) + (COLS / 2) -  WIDTH + 1, 1);
     }
 }
 
@@ -253,7 +287,7 @@ bool add_new(void)
         }
     }
 
-    current_block_color = 5;
+    current_block_color = rand() % COLORS + 2;
 
     for (int i = 0; i < BLOCK_SIZE; i++)
     {
@@ -272,7 +306,7 @@ bool gravity(void)
 {
     for (int i = 0; i < BLOCK_SIZE; i++)
     {
-        if (current_block[i][0] + 1 >=  HEIGHT)
+        if (current_block[i][HEIGHT_INDEX] + 1 >=  HEIGHT)
         {
             return false;
         }
@@ -291,7 +325,7 @@ bool gravity(void)
 
     for (int i = 0; i < BLOCK_SIZE; i++)
     {
-        current_block[i][0] += 1;
+        current_block[i][HEIGHT_INDEX] += 1;
     }
 
     add_block_to_board(current_block, current_block_color);
@@ -323,4 +357,71 @@ void draw_block(int x, int y, int color_pair)
     // mvaddch(y + 10, x * 2 + 20, BLOCK);
     // mvaddch(y + 10, x * 2 + 1 + 20, BLOCK);
     attroff(COLOR_PAIR(color_pair));
+}
+
+void move_block(int input)
+{
+    if (input == KEY_DOWN)
+    {
+        // Move faster
+    }
+    else if (input == KEY_UP)
+    {
+        // Rotate Block
+    }
+
+    int to_add;
+    if (input == KEY_LEFT)
+    {
+        to_add = -1;
+    }
+    else if (input == KEY_RIGHT)
+    {
+        to_add = 1;
+    }
+    else
+    {
+        return;
+    }
+
+    for (int i = 0; i < BLOCK_SIZE; i++)
+    {
+        if (current_block[i][WIDTH_INDEX] + to_add >= WIDTH || current_block[i][WIDTH_INDEX] + to_add < 0)
+        {
+            return;
+        }
+    }
+
+    for (int i = 0; i < BLOCK_SIZE; i++)
+    {
+        if ((board[current_block[i][HEIGHT_INDEX]][current_block[i][WIDTH_INDEX] + to_add] != 0) && (board[current_block[i][HEIGHT_INDEX]][current_block[i][WIDTH_INDEX] + to_add] != current_block_color))
+        {
+            bool flag = true;
+            for (int j = 0; j < BLOCK_SIZE; j++)
+            {
+                if (current_block[i][HEIGHT_INDEX] == current_block[j][HEIGHT_INDEX] && current_block[j][WIDTH_INDEX] == current_block[i][WIDTH_INDEX] + to_add)
+                {
+                    flag = false;
+                }
+            }
+            // attron(COLOR_PAIR(0));
+            // char str[4];
+            // sprintf(str, "%i %i", board[current_block[i][HEIGHT_INDEX]][current_block[i][WIDTH_INDEX] + to_add], to_add);
+            // mvaddstr(0, 0, str);
+            // attroff(COLOR_PAIR(0));
+            if (flag)
+            {
+                return;
+            }
+        }
+    }
+    
+    remove_block_from_board(current_block);
+        
+    for (int i = 0; i < BLOCK_SIZE; i++)
+    {
+        current_block[i][WIDTH_INDEX] += to_add;
+    }
+
+    add_block_to_board(current_block, current_block_color);
 }
