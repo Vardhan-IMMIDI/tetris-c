@@ -30,6 +30,10 @@ int runner(void);
 void draw_block(int y, int x, int color_pair);
 void print_border(void);
 void move_block(int input);
+void rotate_block();
+int rotate_line();
+int* block_boundaries (int block[BLOCK_SIZE][AXES]);
+bool can_place_block (int block[BLOCK_SIZE][AXES]);
 
 // 
 int board[HEIGHT][WIDTH];
@@ -250,6 +254,13 @@ void printer(void)
         }
     }
     print_border();
+
+    attron(COLOR_PAIR(0));
+    mvaddch(0, 0, current_block_index + 48);
+    // mvaddch(y, x, ' ');
+    // mvaddch(y + 10, x * 2 + 20, BLOCK);
+    // mvaddch(y + 10, x * 2 + 1 + 20, BLOCK);
+    attroff(COLOR_PAIR(0));
     refresh();
 
 }
@@ -288,6 +299,10 @@ bool add_new(void)
     }
 
     current_block_color = rand() % COLORS + 2;
+    current_block_index = block;
+    // Add rotation random times
+    // current_block_rotation = rotation;
+    current_block_rotation = 0;
 
     for (int i = 0; i < BLOCK_SIZE; i++)
     {
@@ -409,4 +424,88 @@ void move_block(int input)
     }
 
     add_block_to_board(current_block, current_block_color);
+}
+
+void rotate_block()
+{
+    if (current_block_index == 0)
+    {
+        return;
+    }
+
+    if (current_block_index == 1)
+    {
+        // Rotate Line
+    }
+
+    int block[BLOCK_SIZE][AXES];
+
+    for (int i = 0; i < BLOCK_SIZE; i++)
+    {
+        block[i][0] = current_block[i][0];
+        block[i][1] = current_block[i][1];
+    }
+ 
+    int *boundaries = block_boundaries(current_block);
+}
+
+int rotate_line()
+{
+    int block[BLOCK_SIZE][AXES];
+
+    for (int i = 0; i < BLOCK_SIZE; i++)
+    {
+        block[i][0] = current_block[i][0];
+        block[i][1] = current_block[i][1];   
+    }
+
+    int *boundaries = block_boundaries(current_block);
+
+    if (boundaries[0] - boundaries[1] == 3)
+    {
+
+    }
+}
+
+int* block_boundaries (int block[BLOCK_SIZE][AXES])
+{
+    int h_max = 0, w_max = 0, h_min = HEIGHT, w_min = WIDTH;
+
+    for (int i = 0; i < BLOCK_SIZE; i++)
+    {
+        if (block[i][HEIGHT_INDEX] > h_max)
+        {
+            h_max = block[i][HEIGHT_INDEX];
+        }
+
+        if (block[i][HEIGHT_INDEX] < h_max)
+        {
+            h_min = block[i][HEIGHT_INDEX];
+        }
+
+        if (block[i][WIDTH_INDEX] > w_max)
+        {
+            w_max = block[i][WIDTH_INDEX];
+        }
+
+        if (block[i][WIDTH_INDEX] > w_max)
+        {
+            w_min = block[i][WIDTH_INDEX];
+        }
+    }
+
+    int boundaries[4] = {h_max, h_min, w_max, w_min};
+
+    return boundaries;
+}
+
+bool can_place_block (int block[BLOCK_SIZE][AXES])
+{
+    for (int i = 0; i < BLOCK_SIZE; i++)
+    {
+        if (board[block[i][HEIGHT_INDEX]][block[i][WIDTH_INDEX]] != 0)
+        {
+            return false;
+        }
+    }
 }
