@@ -31,7 +31,7 @@ void draw_block(int y, int x, int color_pair);
 void print_border(void);
 void move_block(int input);
 
-
+// 
 int board[HEIGHT][WIDTH];
 int current_block[BLOCK_SIZE][AXES];
 int current_block_color;
@@ -363,7 +363,7 @@ void move_block(int input)
 {
     if (input == KEY_DOWN)
     {
-        // Move faster
+        gravity();
     }
     else if (input == KEY_UP)
     {
@@ -392,32 +392,17 @@ void move_block(int input)
         }
     }
 
+    remove_block_from_board(current_block);
+    
     for (int i = 0; i < BLOCK_SIZE; i++)
     {
-        if ((board[current_block[i][HEIGHT_INDEX]][current_block[i][WIDTH_INDEX] + to_add] != 0) && (board[current_block[i][HEIGHT_INDEX]][current_block[i][WIDTH_INDEX] + to_add] != current_block_color))
+        if (board[current_block[i][HEIGHT_INDEX]][current_block[i][WIDTH_INDEX] + to_add] != 0)
         {
-            bool flag = true;
-            for (int j = 0; j < BLOCK_SIZE; j++)
-            {
-                if (current_block[i][HEIGHT_INDEX] == current_block[j][HEIGHT_INDEX] && current_block[j][WIDTH_INDEX] == current_block[i][WIDTH_INDEX] + to_add)
-                {
-                    flag = false;
-                }
-            }
-            // attron(COLOR_PAIR(0));
-            // char str[4];
-            // sprintf(str, "%i %i", board[current_block[i][HEIGHT_INDEX]][current_block[i][WIDTH_INDEX] + to_add], to_add);
-            // mvaddstr(0, 0, str);
-            // attroff(COLOR_PAIR(0));
-            if (flag)
-            {
-                return;
-            }
-        }
+            add_block_to_board(current_block, current_block_color);
+            return;
+        }  
     }
-    
-    remove_block_from_board(current_block);
-        
+            
     for (int i = 0; i < BLOCK_SIZE; i++)
     {
         current_block[i][WIDTH_INDEX] += to_add;
